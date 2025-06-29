@@ -597,7 +597,7 @@ BWOEvents.Start2ClockingIn = function(params)
     local professionItemTypeList
     local professionSubItemTypeList
     if profession == "burgerflipper" then
-        professionItemTypeList = {"Base.Spatula", "Base.Ketchup"}
+        professionItemTypeList = {"Base.Spatula", "Base.Ketchup", "EHE.EmergencyFoodSupplyBox", "EHE.EmergencyFoodSupplyBox", "EHE.EmergencyFoodSupplyBox", "EHE.EmergencyFoodSupplyBox", "EHE.EmergencyFoodSupplyBox", "EHE.EmergencyFoodSupplyBox", "EHE.EmergencyFoodSupplyBox"}
     end
     
     if professionItemTypeList then

@@ -88,8 +88,11 @@ ZombiePrograms.Walker.Main = function(bandit)
     for key, eb in pairs(GetBWOModData().EventBuildings) do
         if eb.event == "home2" and eb.x and eb.y then
             foundWorkplace = 1
-            home2Coords = BWOBuildings.GetEventBuildingCoords("home2"); print('home2Coords.x=' .. home2Coords.x .. ' and home2Coords.y=' .. home2Coords.y)
+            home2Coords = BWOBuildings.GetEventBuildingCoords("home2")
+            
+            -- print('home2Coords.x=' .. home2Coords.x .. ' and home2Coords.y=' .. home2Coords.y)
             dist2B = BanditUtils.DistTo(bx, by, home2Coords.x, home2Coords.y)
+            distFromWork = BanditUtils.DistTo(getSpecificPlayer(0):getX(), getSpecificPlayer(0):getY(), home2Coords.x, home2Coords.y)
             break
         end
     end
@@ -125,33 +128,47 @@ ZombiePrograms.Walker.Main = function(bandit)
     -- if NPC is NOT ALREADY holding a paper bag in their loot slot 1 (which would indicate that they have already been recently given a meal which they have eaten and stuffed the bag it came inside into their pocket) then they can move towards the player to get a meal:
 
     if brain.loot[1] ~= "Base.Paperbag_Spiffos" and brain.loot[1] ~= "Base.Paperbag_Jays" and brain.loot[1] ~= "Base.PaperBag" then
-        if stressEatingNeed > 120 and stressEatingNeed < 190 and foundWorkplace == 1 then
+        if stressEatingNeed > 119 and stressEatingNeed < 199 and foundWorkplace == 1 then
             print("stressEatingNeed for " .. brain.fullname .. " is: " .. stressEatingNeed .. " ...therefore")
             dist2B = BanditUtils.DistTo(bx, by, home2Coords.x, home2Coords.y)
-            distFromWork = BanditUtils.DistTo(getSpecificPlayer(0):getX(), getSpecificPlayer(0):getY(), home2Coords.x, home2Coords.y)
+            -- distFromWork = BanditUtils.DistTo(getSpecificPlayer(0):getX(), getSpecificPlayer(0):getY(), home2Coords.x, home2Coords.y)
             
             home2Coords = BWOBuildings.GetEventBuildingCoords("home2"); print(brain.fullname .. ': home2Coords.x=' .. home2Coords.x .. ' and home2Coords.y=' .. home2Coords.y .. " and dist2B is " .. tostring(dist2B) .. " and distFromWork is " .. tostring(distFromWork))
             
-            if distFromWork < 140 and dist2B < 140 then
+            if distFromWork < 80 and dist2B < 80 then
                 local cell = getCell(); local square = cell:getGridSquare(getPlayer(0):getX(), getPlayer(0):getY(), 0); local room = square:getRoom(); if room == nil then print('room is nil'); else print("BWORooms.IsRestaurant(room) is " .. tostring(BWORooms.IsRestaurant(room))); print("room:getName() is: " .. tostring(room:getName())); end
 
-                print("player is " .. distFromWork .. " dist from work and npc is " .. dist2B .. " dist from work so they can head towards work since their stress is " .. stressEatingNeed )
-                if room ~= nil then
+                -- print("player is " .. distFromWork .. " dist from work and npc is " .. dist2B .. " dist from work so they can head towards work since their stress is " .. stressEatingNeed )
+                
+                if room ~= nil or dist2B < 50 and distFromWork > 50 then
 
-                    local cell = getCell(); local square = cell:getGridSquare(getPlayer(0):getX(), getPlayer(0):getY(), 0); local room = square:getRoom()
                     
-                    if BWORooms.IsRestaurant(room) == false then 
+
+                    local roomIsRestaurant = false
+
+                    if room ~= nil then
+                        local cell = getCell(); local square = cell:getGridSquare(getPlayer(0):getX(), getPlayer(0):getY(), 0); local room = square:getRoom()
+                        roomIsRestaurant = BWORooms.IsRestaurant(room)
+                    end
+                    
+                    if roomIsRestaurant == false and dist2B > 50 and distFromWork > 50 then 
                         print('room is not a restaurant')
                     else 
-                        print("BWORooms.IsRestaurant(room) is " .. tostring(BWORooms.IsRestaurant(room)))
+                        -- print("BWORooms.IsRestaurant(room) is " .. tostring(BWORooms.IsRestaurant(room)))
 
                         -- local cell = getCell(); local square = cell:getGridSquare(getPlayer(0):getX(), getPlayer(0):getY(), 0); local room = square:getRoom(); if room == nil then print('room is nil'); else print("BWORooms.IsRestaurant(room) is " .. tostring(BWORooms.IsRestaurant(room))); end
 
 
-                        local cell = getCell(); local square = cell:getGridSquare(getPlayer(0):getX(), getPlayer(0):getY(), 0); local room = square:getRoom(); print("BWORooms.IsRestaurant(room) is " .. tostring(BWORooms.IsRestaurant(room)))
+                        if roomIsRestaurant == true then
+                            local cell = getCell(); local square = cell:getGridSquare(getPlayer(0):getX(), getPlayer(0):getY(), 0); local room = square:getRoom()
+                            -- this should generate something like 'cafe' if used in the Lua console (if you are within a breakfast diner):
+                            local cell = getCell(); local square = cell:getGridSquare(getPlayer(0):getX(), getPlayer(0):getY(), 0); local room = square:getRoom():getName()                            
+                        end
+                        
+                        -- print("BWORooms.IsRestaurant(room) is " .. tostring(BWORooms.IsRestaurant(room)))
 
-                        -- this should generate something like 'cafe' if used in the Lua console (if you are within a breakfast diner):
-                        local cell = getCell(); local square = cell:getGridSquare(getPlayer(0):getX(), getPlayer(0):getY(), 0); local room = square:getRoom():getName(); print("mainFoodsForWorkplaceType should be determined by the room type we are currently in, which is: " .. tostring(room))
+                        
+                        -- print("mainFoodsForWorkplaceType should be determined by the room type we are currently in, which is: " .. tostring(room))
 
                         local mainFoodsForWorkplaceType = {"Base.Sandwich", "Base.BurgerRecipe", "farming.Salad"}; local menuRecipePickedIndex = math.abs(brain.id) % (#mainFoodsForWorkplaceType); if menuRecipePickedIndex == 0 then menuRecipePickedIndex = (#mainFoodsForWorkplaceType); end; menuRecipePicked = mainFoodsForWorkplaceType[menuRecipePickedIndex]
                         
@@ -215,22 +232,22 @@ ZombiePrograms.Walker.Main = function(bandit)
                         local dist2C = BanditUtils.DistTo(cashRegisterX, cashRegisterY, bx, by)
                         
                         if getPlayer(0) and BanditUtils.LineClear(bandit, getPlayer(0)) then
-                            print('cashRegisterX is: ' .. cashRegisterX .. ' .....and cashRegisterY is: ' .. cashRegisterY)
-                            print('getPlayer(0) is: ' .. getPlayer(0):getX() .. ' .....and getPlayer(0):getY() is: ' .. getPlayer(0):getY())
-                            print('bx is: ' .. bx .. ' .....and by is: ' .. by)
+                            -- print('cashRegisterX is: ' .. cashRegisterX .. ' .....and cashRegisterY is: ' .. cashRegisterY)
+                            -- print('getPlayer(0) is: ' .. getPlayer(0):getX() .. ' .....and getPlayer(0):getY() is: ' .. getPlayer(0):getY())
+                            -- print('bx is: ' .. bx .. ' .....and by is: ' .. by)
 
-                            print('ok clear line to square, so we can send our NPC towards the player to order food!')
+                            -- print('ok clear line to square, so we can send our NPC towards the player to order food!')
                             if distFromWork < 140 then
-                                print('ok triggered if conditional 1 for moving towards cashRegister!')
+                                -- print('ok triggered if conditional 1 for moving towards cashRegister!')
                                 if dist2C >= bufferDist then
-                                    print('ok triggered if conditional 2 for moving towards cashRegister!')
-                                    print('distance of NPC from cashRegister is:' .. dist2C)
+                                    -- print('ok triggered if conditional 2 for moving towards cashRegister!')
+                                    -- print('distance of NPC from cashRegister is:' .. dist2C)
 
                                     walkType = "Walk"
                                     table.insert(tasks, BanditUtils.GetMoveTask(endurance, cashRegisterX, cashRegisterY, 0, walkType, dist2C, false))
                                     return {status=true, next="Main", tasks=tasks}
                                 else
-                                    print('ok triggered if conditional 3 for moving towards cashRegister!')
+                                    -- print('ok triggered if conditional 3 for moving towards cashRegister!')
                                     local rn = ZombRand(5)
                                     local anim
                                     local item
@@ -278,12 +295,12 @@ ZombiePrograms.Walker.Main = function(bandit)
                                     print('ok triggered if conditional 3B asquare generation for adjancent free time finder')
                                     local dist = math.sqrt(math.pow(bandit:getX() - (square:getX() + 0.5), 2) + math.pow(bandit:getY() - (square:getY() + 0.5), 2))
                                     if dist > 1.20 then
-                                        print('ok triggered if conditional 3C - GETTING MOVE-TASK FROM asquare generation for adjancent free time finder')
+                                        -- print('ok triggered if conditional 3C - GETTING MOVE-TASK FROM asquare generation for adjancent free time finder')
                                         table.insert(tasks, BanditUtils.GetMoveTask(0, asquare:getX(), asquare:getY(), asquare:getZ(), "Walk", dist, false))
-                                        print ("WALKER 7: " .. (getTimestampMs() - ts))
+                                        -- print ("WALKER 7: " .. (getTimestampMs() - ts))
                                         return {status=true, next="Main", tasks=tasks}
                                     else
-                                        print('ok triggered if conditional 3D - SMOKING - asquare generation for adjancent free time finder')
+                                        -- print('ok triggered if conditional 3D - SMOKING - asquare generation for adjancent free time finder')
                                         local task = {action="Smoke", anim="Smoke", item="Bandits.Cigarette", left=true, time=100}
                                         table.insert(tasks, task)
                                         return {status=true, next="Main", tasks=tasks}
@@ -322,12 +339,14 @@ ZombiePrograms.Walker.Main = function(bandit)
 
     if bandit:isOutside() then
         if brain.weapons.melee == "Base.Paperbag_Spiffos" or brain.weapons.melee == "Base.Paperbag_Jays" or brain.weapons.melee == "Base.PaperBag" then
-            local babe1 = BanditZombie.GetInstanceById(BanditUtils.GetClosestBanditLocationProgram(getSpecificPlayer(0), {"Walker", "Runner", "Inhabitant", "Active", "Babe"}).id);
-            babe1:setPrimaryHandItem(nil);
-            -- weapons.melee = "Base.Fork"
+            local babe1 = BanditZombie.GetInstanceById(brain.id);
 
-            brain.weapons.melee = BanditBrain.Get(BanditZombie.GetInstanceById( BanditUtils.GetClosestBanditLocationProgram(getSpecificPlayer(0), {"Walker", "Runner", "Inhabitant", "Active", "Babe"}).id)).loot[4]
-            
+            -- Use this in Lua console: 
+            -- local brain = BanditBrain.Get(BanditZombie.GetInstanceById( BanditUtils.GetClosestBanditLocationProgram(getSpecificPlayer(0), {"Walker", "Runner", "Inhabitant", "Active", "Babe"}).id)); local babe1 = BanditZombie.GetInstanceById(brain.id); print(brain.fullname);local fakeItem = BanditCompatibility.InstanceItem("Base.Pan"); babe1:setPrimaryHandItem(fakeItem);
+
+            brain.weapons.melee = brain.loot[4]
+
+            local fakeItem = BanditCompatibility.InstanceItem(brain.loot[4]); babe1:setPrimaryHandItem(fakeItem);
 
             local task = {action="Equip", itemPrimary=brain.weapons.melee}
             table.insert(tasks, task)
@@ -335,12 +354,37 @@ ZombiePrograms.Walker.Main = function(bandit)
         end
     end
 
-    local stress = BanditBrain.Get(BanditZombie.GetInstanceById(BanditUtils.GetClosestBanditLocationProgram(getSpecificPlayer(0), {"Walker", "Runner", "Inhabitant", "Active", "Babe"}).id)).bornCoords.z
+    local stress = brain.bornCoords.z
+
+    if brain.hostile == true and bandit:isOutside() and stress >= 200 then 
+        if brain.loot[1] == "Base.PaperBag" then
+            local sound = "ZSVomit" .. (1 + ZombRand(4))
+            local task = {action="Vomit", anim="Vomit", sound=sound, time=35}
+            table.insert(tasks, task)
+            brain.loot[1] = "Base.ChairLeg"
+            return tasks
+        end
+        if brain.loot[1] == "Base.ChairLeg" then
+            brain.program.name = "Active"
+
+            brain.program.name = "Active"
+
+            if brain.weapons.melee == "Base.BareHands" then
+                brain.weapons.melee = brain.loot[1]
+            end
+
+            local task = {action="Equip", itemPrimary=brain.loot[1]}
+            table.insert(tasks, task) 
+            return tasks            
+        end 
+
+        
+    end
 
     -- if inside building change program
     if not bandit:isOutside() then
         if brain.loot[1] ~= "Base.Paperbag_Spiffos" and brain.loot[1] ~= "Base.Paperbag_Jays" and brain.loot[1] ~= "Base.PaperBag" then
-            if stressEatingNeed < 140 or dist2B > 25 or stressEatingNeed > 185 then
+            if stressEatingNeed < 119 or stressEatingNeed > 185 then
                 Bandit.ClearTasks(bandit)
                 Bandit.SetProgram(bandit, "Inhabitant", {})
 
@@ -376,7 +420,7 @@ ZombiePrograms.Walker.Main = function(bandit)
                     end
                 else
                     if brain.weapons.melee == "Base.Paperbag_Spiffos" then
-                        brain.weapons.melee = BanditBrain.Get(BanditZombie.GetInstanceById( BanditUtils.GetClosestBanditLocationProgram(getSpecificPlayer(0), {"Walker", "Runner", "Inhabitant", "Active", "Babe"}).id)).loot[4]
+                        brain.weapons.melee = brain.loot[4]
 
                         brain.program.name = "Active"
 
@@ -522,7 +566,7 @@ ZombiePrograms.Walker.Main = function(bandit)
                                 local dist = math.sqrt(math.pow(bandit:getX() - (square:getX() + 0.5), 2) + math.pow(bandit:getY() - (square:getY() + 0.5), 2))
                                 if dist > 1.20 then
                                     table.insert(tasks, BanditUtils.GetMoveTask(0, asquare:getX(), asquare:getY(), asquare:getZ(), "Walk", dist, false))
-                                    print ("WALKER 7: " .. (getTimestampMs() - ts))
+                                    -- print ("WALKER 7: " .. (getTimestampMs() - ts))
                                     return {status=true, next="Main", tasks=tasks}
                                 else
                                     local task = {action="BarbecueLit", anim="Loot", x=object:getX(), y=object:getY(), z=object:getZ(), time=100}
